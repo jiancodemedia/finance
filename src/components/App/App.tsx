@@ -1,18 +1,24 @@
-import { Props } from "./connect";
-import { useEffect } from "react";
+import { Outlet, NavLink } from "react-router-dom";
+import { Footer } from "../Footer/Footer";
 import { Container } from "./styles";
-import { Button } from "@mui/material";
 
-function App(props: Props) {
-  useEffect(() => {
-    props.increment();
-  }, []);
-
+function App() {
   return (
     <Container>
-      <Button onClick={() => props.increment()}>Increment</Button>
-      <Button onClick={() => props.decrement()}>Decrement</Button>
-      <div>Learn React {props.count} </div>
+      <nav>
+        <ul>
+          <li>
+            <NavLink to="/">Home</NavLink>
+          </li>
+          <li>
+            <NavLink to="/about">About</NavLink>
+          </li>
+        </ul>
+      </nav>
+      <div className="outlet">
+        <Outlet />
+      </div>
+      <Footer />
     </Container>
   );
 }

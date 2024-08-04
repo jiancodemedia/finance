@@ -1,19 +1,11 @@
 import { connect } from "react-redux";
-import App from "./App";
-import { decrement, increment, incrementByAmount } from "./store/appSlice";
-import { RootState } from "../../store";
+import Component from "./App";
 
-const mapStateToProps = (state: RootState) => ({
-  count: state.app.value
-});
+const mapStateToProps = () => ({});
 
-const mapDispatchToProps = {
-  increment,
-  decrement,
-  incrementByAmount
-};
+const mapDispatchToProps = {};
 
 export type Props = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(Component);
