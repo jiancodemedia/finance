@@ -1,4 +1,4 @@
-import { Link, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import Home from "../../pages/Home/connect";
 import App from "../App/App";
 
@@ -34,7 +34,7 @@ export const routersConfig = [
   }
 ];
 
-const router = createBrowserRouter(routersConfig);
+const router = createHashRouter(routersConfig);
 
 export default function Router() {
   return <RouterProvider router={router} fallbackElement={<p>Loading...</p>} />;
