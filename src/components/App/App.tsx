@@ -13,6 +13,9 @@ function App() {
           <li>
             <NavLink to="/about">About</NavLink>
           </li>
+          <li>
+            <NavLink to="/chart">Chart</NavLink>
+          </li>
         </ul>
       </nav>
       <div className="outlet">
