@@ -16,6 +16,9 @@ function App() {
           <li>
             <NavLink to="/chart">Chart</NavLink>
           </li>
+          <li>
+            <NavLink to="/grid">Grid</NavLink>
+          </li>
         </ul>
       </nav>
       <div className="outlet">
