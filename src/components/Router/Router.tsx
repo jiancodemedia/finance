@@ -1,7 +1,6 @@
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import Home from "../../pages/Home/connect";
 import App from "../App/App";
-import Chart from "../../pages/Home/Chart";
 import Grid from "../../pages/Home/Grid";
 
 function NoMatch() {
@@ -25,16 +24,12 @@ export const routersConfig = [
         element: <Home />
       },
       {
-        path: "about",
-        element: <div>About</div>
-      },
-      {
-        path: "chart",
-        element: <Chart />
-      },
-      {
         path: "grid",
         element: <Grid />
+      },
+      {
+        path: "about",
+        element: <div>About</div>
       },
       {
         path: "*",

@@ -11,13 +11,10 @@ function App() {
             <NavLink to="/">Home</NavLink>
           </li>
           <li>
-            <NavLink to="/about">About</NavLink>
-          </li>
-          <li>
-            <NavLink to="/chart">Chart</NavLink>
-          </li>
-          <li>
             <NavLink to="/grid">Grid</NavLink>
+          </li>
+          <li>
+            <NavLink to="/about">About</NavLink>
           </li>
         </ul>
       </nav>
