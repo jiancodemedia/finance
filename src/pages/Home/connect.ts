@@ -1,9 +1,7 @@
 import { connect } from "react-redux";
 import Component from "./Home";
-import { decrement, increment } from "../../components/App/store/slice";
-import { RootState } from "../../store";
 
-const mapStateToProps = (state: any) => ({});
+const mapStateToProps = () => ({});
 
 const mapDispatchToProps = {};
 

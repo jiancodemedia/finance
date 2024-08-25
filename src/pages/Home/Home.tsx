@@ -1,5 +1,4 @@
-import { Props } from "./connect";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Container } from "./styles";
 import { Autocomplete, TextField } from "@mui/material";
 import { ExchangeRate } from "../../components/ExchangeRate/ExchangeRate";
