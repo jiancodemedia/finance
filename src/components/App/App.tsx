@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Footer } from "../Footer/Footer";
+// import { Footer } from "../Footer/Footer";
 import { Container } from "./styles";
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
       <div className="outlet">
         <Outlet />
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </Container>
   );
 }
