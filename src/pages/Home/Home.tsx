@@ -1,18 +1,17 @@
-import { Props } from "./connect";
-import { useEffect } from "react";
+import { useState } from "react";
 import { Container } from "./styles";
-import { Button } from "@mui/material";
+import { ExchangeRate } from "../../components/ExchangeRate/ExchangeRate";
+import { CandlesChart } from "../../components/CandlesChart/CandlesChart";
+import { LineChart } from "../../components/LineChart/LineChart";
 
-function Home(props: Props) {
-  useEffect(() => {
-    props.changeName("Count");
-  }, []);
+function Home() {
+  const [ticker, setTickers] = useState<string>("AUD/USD");
 
   return (
     <Container>
-      <Button onClick={() => props.increment()}>Increment</Button>
-      <Button onClick={() => props.decrement()}>Decrement</Button>
-      <div>{`${props.name} ${props.count}`}</div>
+      <ExchangeRate ticker={ticker} setTickers={setTickers} />
+      <CandlesChart ticker={ticker} />
+      <LineChart ticker={ticker} />
     </Container>
   );
 }

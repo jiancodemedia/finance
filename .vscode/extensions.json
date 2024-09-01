@@ -6,6 +6,7 @@
     "christian-kohler.path-intellisense",
     "styled-components.vscode-styled-components",
     "mechatroner.rainbow-csv",
-    "formulahendry.auto-close-tag"
+    "formulahendry.auto-close-tag",
+    "pkief.material-icon-theme"
   ]
 }

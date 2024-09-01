@@ -1,19 +1,9 @@
 import { connect } from "react-redux";
 import Component from "./Home";
-import { decrement, increment } from "../../components/App/store/slice";
-import { RootState } from "../../store";
-import { changeName } from "./store/homeSlice";
 
-const mapStateToProps = (state: RootState) => ({
-  count: state.app.value,
-  name: state.home.name
-});
+const mapStateToProps = () => ({});
 
-const mapDispatchToProps = {
-  increment,
-  decrement,
-  changeName
-};
+const mapDispatchToProps = {};
 
 export type Props = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps;
