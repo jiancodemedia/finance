@@ -1,68 +1,53 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, FC } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { ColDef } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { Data, TickerResponse } from "../../apis/stock";
+import { getTickers } from "../../types/api/Stock";
 
-interface RowData {
+interface Prop {
   ticker: string;
-  publisher: string;
+  setTickers(ticker: string): void;
 }
 
-interface ApiResponse {
-  data: {
-    publisher: string;
-    ticker: string;
-  }[];
-  meta: {
-    pagination: {
-      page: number;
-      per_page: number;
-    };
-  };
-}
-
-function Grid() {
-  const [rowData, setRowData] = useState<RowData[]>([]);
-  const [columnDefs] = useState<ColDef<RowData>[]>([
-    { headerName: "Ticker", field: "ticker" },
-    { headerName: "Publisher", field: "publisher" }
-  ]);
+const Grid: FC<Prop> = ({ ticker, setTickers }) => {
+  const [rowData, setRowData] = useState<Data[]>([]);
 
   useEffect(() => {
-    fetch(
-      "https://api.finazon.io/latest/binance/binance/tickers?page_size=1000",
-      {
-        method: "GET",
-        headers: {
-          Authorization: "apikey 855c0ef53fa7486c99a2e7386bc8e49a9v"
-        }
+    const fetchData = async () => {
+      try {
+        const tickerResponse: TickerResponse = await getTickers(50);
+        setRowData(tickerResponse.data);
+        setTickers(tickerResponse.data);
+      } catch (error) {
+        console.error("Error fetching tickers", error);
       }
-    )
-      .then((response) => response.json())
-      .then((data: ApiResponse) => {
-        console.log("Fetched data:", data);
-        const rowData: RowData[] = data.data.map((item) => ({
-          ticker: item.ticker,
-          publisher: item.publisher
-        }));
-        setRowData(rowData);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+    };
+    fetchData();
+  }, [setTickers]);
+
+  const stocks: ColDef[] = [
+    { headerName: "Symbol", field: "symbol" },
+    { headerName: "Name", field: "name" },
+    { headerName: "Currency", field: "currency" },
+    { headerName: "Exchange", field: "exchange" },
+    { headerName: "Country", field: "country" },
+    { headerName: "Type", field: "type" },
+    { headerName: "FIGI Code", field: "figi_code" },
+    { headerName: "Price", field: "p" }
+  ];
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 600, width: "100%" }}>
-      <AgGridReact<RowData>
+    <div className="ag-theme-alpine" style={{ height: 800, width: "100%" }}>
+      <AgGridReact<Data>
         rowData={rowData}
-        columnDefs={columnDefs}
+        columnDefs={stocks}
         pagination={true}
         paginationPageSize={50}
       />
     </div>
   );
-}
+};
 
 export default Grid;
