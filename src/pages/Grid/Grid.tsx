@@ -4,18 +4,17 @@ import { ColDef } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Data, TickerResponse } from "../../apis/stock";
-import { getTickers } from "../../types/api/Stock";
+import { getTickers, getPrice } from "../../types/api/Stock";
 
-interface Prop {
-  ticker: string;
-  setTickers(ticker: string): void;
-}
-
-const Grid: FC<Prop> = ({ ticker, setTickers }) => {
+const Grid: FC<{ ticker: string; setTickers: (tickers: Data[]) => void }> = ({
+  ticker,
+  setTickers
+}) => {
   const [rowData, setRowData] = useState<Data[]>([]);
+  const [price, setPrice] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTickers = async () => {
       try {
         const tickerResponse: TickerResponse = await getTickers(50);
         setRowData(tickerResponse.data);
@@ -24,8 +23,22 @@ const Grid: FC<Prop> = ({ ticker, setTickers }) => {
         console.error("Error fetching tickers", error);
       }
     };
-    fetchData();
+    fetchTickers();
   }, [setTickers]);
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        if (ticker) {
+          const priceResponse = await getPrice(ticker);
+          setPrice(priceResponse.data.p);
+        }
+      } catch (error) {
+        console.error("Error fetching price", error);
+      }
+    };
+    fetchPrice();
+  }, [ticker]);
 
   const stocks: ColDef[] = [
     { headerName: "Symbol", field: "symbol" },
@@ -35,7 +48,11 @@ const Grid: FC<Prop> = ({ ticker, setTickers }) => {
     { headerName: "Country", field: "country" },
     { headerName: "Type", field: "type" },
     { headerName: "FIGI Code", field: "figi_code" },
-    { headerName: "Price", field: "p" }
+    {
+      headerName: "Price",
+      field: "p",
+      valueGetter: () => (price !== null ? price : "Loading...")
+    }
   ];
 
   return (

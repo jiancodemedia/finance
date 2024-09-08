@@ -10,8 +10,8 @@ const api = axios.create({
   }
 });
 
-export const getTickers = (pageSize: number) => {
-  return api.get<TickerResponse>(`/tickers?page_size=${pageSize}`);
+export const getTickers = (ticker: number) => {
+  return api.get<TickerResponse>(`/tickers?=${ticker}`);
 };
 
 export const getPrice = (ticker: string) => {
