@@ -1,7 +1,7 @@
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import Home from "../../pages/Home/connect";
 import App from "../App/App";
-import Grid from "../../pages/Grid/Grid";
+import { Grid } from "../../pages/Grid/Grid";
 
 function NoMatch() {
   return (

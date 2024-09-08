@@ -1,45 +1,61 @@
-import React, { useEffect, useState, FC } from "react";
+import React, { useEffect, useState, FC, useRef, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef } from "ag-grid-community";
+import { ColDef, IRowNode } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { Data, TickerResponse } from "../../apis/stock";
-import { getTickers, getPrice } from "../../types/api/Stock";
+import { StockData } from "../../types/api/Stock";
+import { getTickers } from "../../apis/stock";
+import { Container } from "./styles";
+import { Menu } from "../../components/Menu/Menu";
 
-const Grid: FC<{ ticker: string; setTickers: (tickers: Data[]) => void }> = ({
-  ticker,
-  setTickers
-}) => {
-  const [rowData, setRowData] = useState<Data[]>([]);
-  const [price, setPrice] = useState<number | null>(null);
+export const Grid: FC = () => {
+  const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<StockData[]>([]);
+  const [name, setName] = useState<string | null>(null);
+  const [symbol, setSymbol] = useState<string | null>(null);
+  const [exchange, setExchange] = useState<string | null>(null);
+  const [nameOptions, setNameOptions] = useState<string[]>([]);
+  const [symbolOptions, setSymbolOptions] = useState<string[]>([]);
+  const [exchangeOptions, setExchangeOptions] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchTickers = async () => {
       try {
-        const tickerResponse: TickerResponse = await getTickers(50);
-        setRowData(tickerResponse.data);
-        setTickers(tickerResponse.data);
+        const tickerResponse = await getTickers(10);
+        const data = tickerResponse.data.data.data;
+
+        setRowData(data);
       } catch (error) {
         console.error("Error fetching tickers", error);
       }
     };
     fetchTickers();
-  }, [setTickers]);
+  }, []);
 
   useEffect(() => {
-    const fetchPrice = async () => {
-      try {
-        if (ticker) {
-          const priceResponse = await getPrice(ticker);
-          setPrice(priceResponse.data.p);
-        }
-      } catch (error) {
-        console.error("Error fetching price", error);
-      }
-    };
-    fetchPrice();
-  }, [ticker]);
+    setNameOptions([...new Set(rowData.map((d) => d.name))]);
+    setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+    setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+  }, [rowData]);
 
+  useEffect(() => {
+    if (name) {
+      // Apply filter to row data with the selected name
+      const filter = rowData.filter((d) => d.name == name);
+      // Extract symbols from row data
+      const symbols = filter.map((d) => d.symbol);
+      // Using set to remove all duplicate symbols
+      setSymbolOptions([...new Set(symbols)]);
+
+      const exchanges = filter.map((d) => d.exchange);
+      setExchangeOptions([...new Set(exchanges)]);
+    } else {
+      setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+      setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+    }
+  }, [name]);
+  // useEffect(() => {}, [symbol]);
+  // useEffect(() => {}, [exchange]);
   const stocks: ColDef[] = [
     { headerName: "Symbol", field: "symbol" },
     { headerName: "Name", field: "name" },
@@ -47,24 +63,54 @@ const Grid: FC<{ ticker: string; setTickers: (tickers: Data[]) => void }> = ({
     { headerName: "Exchange", field: "exchange" },
     { headerName: "Country", field: "country" },
     { headerName: "Type", field: "type" },
-    { headerName: "FIGI Code", field: "figi_code" },
-    {
-      headerName: "Price",
-      field: "p",
-      valueGetter: () => (price !== null ? price : "Loading...")
-    }
+    { headerName: "FIGI Code", field: "figi_code" }
   ];
 
+  useEffect(() => {
+    gridRef.current?.api?.onFilterChanged();
+  }, [name, symbol, exchange]);
+
+  const isExternalFilterPresent = useCallback((): boolean => {
+    return name != null || symbol != null || exchange != null;
+  }, [name, symbol, exchange]);
+
+  const doesExternalFilterPass = useCallback(
+    ({ data }: IRowNode<StockData>): boolean => {
+      if (name != null && data?.name != name) {
+        return false;
+      } else if (symbol != null && data?.symbol != symbol) {
+        return false;
+      } else if (exchange != null && data?.exchange != exchange) {
+        return false;
+      }
+      return true;
+    },
+    [name, symbol, exchange]
+  );
+
   return (
-    <div className="ag-theme-alpine" style={{ height: 800, width: "100%" }}>
-      <AgGridReact<Data>
+    <Container className="ag-theme-alpine">
+      <Menu
+        name={name}
+        symbol={symbol}
+        exchange={exchange}
+        nameOptions={nameOptions}
+        symbolOptions={symbolOptions}
+        exchangeOptions={exchangeOptions}
+        onChangeName={setName}
+        onChangeSymbol={setSymbol}
+        onChangeExchange={setExchange}
+        onSearch={(text) => {
+          gridRef.current?.api.setGridOption("quickFilterText", text);
+        }}
+      />
+      <AgGridReact<StockData>
+        ref={gridRef}
         rowData={rowData}
         columnDefs={stocks}
-        pagination={true}
-        paginationPageSize={50}
+        isExternalFilterPresent={isExternalFilterPresent}
+        doesExternalFilterPass={doesExternalFilterPass}
       />
-    </div>
+    </Container>
   );
 };
-
-export default Grid;
