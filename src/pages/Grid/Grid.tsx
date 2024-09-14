@@ -54,8 +54,33 @@ export const Grid: FC = () => {
       setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
     }
   }, [name]);
-  // useEffect(() => {}, [symbol]);
-  // useEffect(() => {}, [exchange]);
+
+  useEffect(() => {
+    if (symbol) {
+      const filter = rowData.filter((d) => d.symbol == symbol);
+      const names = filter.map((d) => d.name);
+      setNameOptions([...new Set(names)]);
+      const exchanges = filter.map((d) => d.exchange);
+      setExchangeOptions([...new Set(exchanges)]);
+    } else {
+      setNameOptions([...new Set(rowData.map((d) => d.name))]);
+      setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+    }
+  }, [symbol]);
+
+  useEffect(() => {
+    if (exchange) {
+      const filter = rowData.filter((d) => d.exchange == exchange);
+      const names = filter.map((d) => d.name);
+      setNameOptions([...new Set(names)]);
+      const symbols = filter.map((d) => d.symbol);
+      setSymbolOptions([...new Set(symbols)]);
+    } else {
+      setNameOptions([...new Set(rowData.map((d) => d.name))]);
+      setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+    }
+  }, [exchange]);
+
   const stocks: ColDef[] = [
     { headerName: "Symbol", field: "symbol" },
     { headerName: "Name", field: "name" },
