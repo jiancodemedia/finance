@@ -1,68 +1,141 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, FC, useRef, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef } from "ag-grid-community";
+import { ColDef, IRowNode } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { StockData } from "../../types/api/Stock";
+import { getTickers } from "../../apis/stock";
+import { Container } from "./styles";
+import { Menu } from "../../components/Menu/Menu";
 
-interface RowData {
-  ticker: string;
-  publisher: string;
-}
-
-interface ApiResponse {
-  data: {
-    publisher: string;
-    ticker: string;
-  }[];
-  meta: {
-    pagination: {
-      page: number;
-      per_page: number;
-    };
-  };
-}
-
-function Grid() {
-  const [rowData, setRowData] = useState<RowData[]>([]);
-  const [columnDefs] = useState<ColDef<RowData>[]>([
-    { headerName: "Ticker", field: "ticker" },
-    { headerName: "Publisher", field: "publisher" }
-  ]);
+export const Grid: FC = () => {
+  const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<StockData[]>([]);
+  const [name, setName] = useState<string | null>(null);
+  const [symbol, setSymbol] = useState<string | null>(null);
+  const [exchange, setExchange] = useState<string | null>(null);
+  const [nameOptions, setNameOptions] = useState<string[]>([]);
+  const [symbolOptions, setSymbolOptions] = useState<string[]>([]);
+  const [exchangeOptions, setExchangeOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch(
-      "https://api.finazon.io/latest/binance/binance/tickers?page_size=1000",
-      {
-        method: "GET",
-        headers: {
-          Authorization: "apikey 855c0ef53fa7486c99a2e7386bc8e49a9v"
-        }
+    const fetchTickers = async () => {
+      try {
+        const tickerResponse = await getTickers(10);
+        const data = tickerResponse.data.data.data;
+
+        setRowData(data);
+      } catch (error) {
+        console.error("Error fetching tickers", error);
       }
-    )
-      .then((response) => response.json())
-      .then((data: ApiResponse) => {
-        console.log("Fetched data:", data);
-        const rowData: RowData[] = data.data.map((item) => ({
-          ticker: item.ticker,
-          publisher: item.publisher
-        }));
-        setRowData(rowData);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    };
+    fetchTickers();
   }, []);
 
-  return (
-    <div className="ag-theme-alpine" style={{ height: 600, width: "100%" }}>
-      <AgGridReact<RowData>
-        rowData={rowData}
-        columnDefs={columnDefs}
-        pagination={true}
-        paginationPageSize={50}
-      />
-    </div>
-  );
-}
+  useEffect(() => {
+    setNameOptions([...new Set(rowData.map((d) => d.name))]);
+    setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+    setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+  }, [rowData]);
 
-export default Grid;
+  useEffect(() => {
+    if (name) {
+      // Apply filter to row data with the selected name
+      const filter = rowData.filter((d) => d.name == name);
+      // Extract symbols from row data
+      const symbols = filter.map((d) => d.symbol);
+      // Using set to remove all duplicate symbols
+      setSymbolOptions([...new Set(symbols)]);
+
+      const exchanges = filter.map((d) => d.exchange);
+      setExchangeOptions([...new Set(exchanges)]);
+    } else {
+      setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+      setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+    }
+  }, [name]);
+
+  useEffect(() => {
+    if (symbol) {
+      const filter = rowData.filter((d) => d.symbol == symbol);
+      const names = filter.map((d) => d.name);
+      setNameOptions([...new Set(names)]);
+      const exchanges = filter.map((d) => d.exchange);
+      setExchangeOptions([...new Set(exchanges)]);
+    } else {
+      setNameOptions([...new Set(rowData.map((d) => d.name))]);
+      setExchangeOptions([...new Set(rowData.map((d) => d.exchange))]);
+    }
+  }, [symbol]);
+
+  useEffect(() => {
+    if (exchange) {
+      const filter = rowData.filter((d) => d.exchange == exchange);
+      const names = filter.map((d) => d.name);
+      setNameOptions([...new Set(names)]);
+      const symbols = filter.map((d) => d.symbol);
+      setSymbolOptions([...new Set(symbols)]);
+    } else {
+      setNameOptions([...new Set(rowData.map((d) => d.name))]);
+      setSymbolOptions([...new Set(rowData.map((d) => d.symbol))]);
+    }
+  }, [exchange]);
+
+  const stocks: ColDef[] = [
+    { headerName: "Symbol", field: "symbol" },
+    { headerName: "Name", field: "name" },
+    { headerName: "Currency", field: "currency" },
+    { headerName: "Exchange", field: "exchange" },
+    { headerName: "Country", field: "country" },
+    { headerName: "Type", field: "type" },
+    { headerName: "FIGI Code", field: "figi_code" }
+  ];
+
+  useEffect(() => {
+    gridRef.current?.api?.onFilterChanged();
+  }, [name, symbol, exchange]);
+
+  const isExternalFilterPresent = useCallback((): boolean => {
+    return name != null || symbol != null || exchange != null;
+  }, [name, symbol, exchange]);
+
+  const doesExternalFilterPass = useCallback(
+    ({ data }: IRowNode<StockData>): boolean => {
+      if (name != null && data?.name != name) {
+        return false;
+      } else if (symbol != null && data?.symbol != symbol) {
+        return false;
+      } else if (exchange != null && data?.exchange != exchange) {
+        return false;
+      }
+      return true;
+    },
+    [name, symbol, exchange]
+  );
+
+  return (
+    <Container className="ag-theme-alpine">
+      <Menu
+        name={name}
+        symbol={symbol}
+        exchange={exchange}
+        nameOptions={nameOptions}
+        symbolOptions={symbolOptions}
+        exchangeOptions={exchangeOptions}
+        onChangeName={setName}
+        onChangeSymbol={setSymbol}
+        onChangeExchange={setExchange}
+        onSearch={(text) => {
+          gridRef.current?.api.setGridOption("quickFilterText", text);
+        }}
+      />
+      <AgGridReact<StockData>
+        ref={gridRef}
+        rowData={rowData}
+        columnDefs={stocks}
+        isExternalFilterPresent={isExternalFilterPresent}
+        doesExternalFilterPass={doesExternalFilterPass}
+      />
+    </Container>
+  );
+};
