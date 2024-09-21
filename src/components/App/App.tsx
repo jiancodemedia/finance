@@ -14,6 +14,9 @@ function App() {
             <NavLink to="/grid">Grid</NavLink>
           </li>
           <li>
+            <NavLink to="/olympic">Olympic</NavLink>
+          </li>
+          <li>
             <NavLink to="/about">About</NavLink>
           </li>
         </ul>

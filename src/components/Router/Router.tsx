@@ -2,6 +2,7 @@ import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import Home from "../../pages/Home/connect";
 import App from "../App/App";
 import { Grid } from "../../pages/Grid/Grid";
+import { OlympicGrid } from "../../pages/Olympic/Olympic";
 
 function NoMatch() {
   return (
@@ -26,6 +27,10 @@ export const routersConfig = [
       {
         path: "grid",
         element: <Grid />
+      },
+      {
+        path: "olympic",
+        element: <OlympicGrid />
       },
       {
         path: "about",
